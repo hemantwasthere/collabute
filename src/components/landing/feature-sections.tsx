@@ -231,7 +231,10 @@ export function Features() {
           </div>
           <div className="feature-ticket">
             <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-              <ToolIcon name="linear" className="size-4 text-[#6d6ab0]" />
+              <ToolIcon
+                name="linear"
+                className="size-4 text-[var(--accent-ink)]"
+              />
               PRODUCT / ONBOARDING<span className="ml-auto">···</span>
             </div>
             <h4>Build onboarding empty states</h4>
@@ -445,8 +448,8 @@ export function ClosingCta() {
   return (
     <section className="closing-cta">
       <div className="cta-grid" aria-hidden="true" />
-      <BrandMark className="relative size-10 text-[#c9dfb3]" />
-      <p className="eyebrow relative mt-7 text-[#b7c9ad]">
+      <BrandMark className="relative size-10 text-[var(--accent-ink)]" />
+      <p className="eyebrow relative mt-7 text-[var(--accent-ink)]">
         THE NEXT CHAPTER OF TEAMWORK
       </p>
       <h2>

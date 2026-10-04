@@ -185,3 +185,186 @@ test("interactive states remain accessible", async ({ page }) => {
     })),
   ).toEqual([]);
 });
+
+test("logo links return to the top and footer wordmark has no arrow", async ({
+  page,
+}) => {
+  await page.goto("/?preview=1&theme=clay#pricing");
+  await page.getByRole("link", { name: "Collabute — back to top" }).click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  await expect(page).toHaveURL(/\/?preview=1&theme=clay#top$/);
+  await page.locator("#pricing").scrollIntoViewIfNeeded();
+  await page.getByRole("link", { name: "Collabute home", exact: true }).click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  await expect(page.locator(".footer-wordmark")).toHaveText("collabute");
+});
+
+test("theme toolbar switches palettes, persists, and filters", async ({
+  page,
+}) => {
+  await expect(
+    page.getByRole("button", { name: "Open theme toolbar" }),
+  ).toHaveCount(0);
+  await page.goto("/?preview=1");
+  await page.getByRole("button", { name: "Open theme toolbar" }).click();
+  await page.getByRole("button", { name: "Cobalt theme", exact: true }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "cobalt");
+  await page.getByRole("button", { name: "Close theme toolbar" }).click();
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "cobalt");
+  await page.getByRole("button", { name: "Open theme toolbar" }).click();
+  await page.getByRole("textbox", { name: "Search themes" }).fill("midnight");
+  await expect(
+    page.getByRole("button", { name: "Midnight theme", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Forest theme", exact: true }),
+  ).toHaveCount(0);
+  await page
+    .getByRole("button", { name: "Midnight theme", exact: true })
+    .click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "midnight");
+  await page.keyboard.press("Escape");
+  await expect(
+    page.getByRole("dialog", { name: "Collabute Studio" }),
+  ).toHaveCount(0);
+  await page.goto("/?preview=1&theme=iris");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "iris");
+});
+
+test("preview preferences pause motion, toggle grids, and reset", async ({
+  page,
+}) => {
+  await page.goto("/?preview=1&theme=midnight");
+  await page
+    .getByRole("button", { name: "Theme preferences", exact: true })
+    .click();
+  await page.getByRole("switch", { name: /Subtle motion/ }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-motion", "off");
+  await expect(page.locator(".waveform > span").first()).toHaveCSS(
+    "animation-name",
+    "none",
+  );
+  await page.getByRole("switch", { name: /Background grid/ }).click();
+  await expect(page.locator(".hero-grid")).toHaveCSS("opacity", "0");
+  await page.getByRole("button", { name: /Back to the original/ }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "forest");
+  await expect(page.locator("html")).toHaveAttribute("data-motion", "on");
+  await expect(page.locator("html")).toHaveAttribute("data-grid", "on");
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Minimize toolbar" }).click();
+  await expect(
+    page.getByRole("button", { name: "Theme preferences", exact: true }),
+  ).toHaveCount(0);
+  await page.getByRole("button", { name: "Open theme toolbar" }).click();
+  await expect(
+    page.getByRole("dialog", { name: "Collabute Studio" }),
+  ).toBeVisible();
+});
+
+for (const theme of [
+  "forest",
+  "cobalt",
+  "clay",
+  "iris",
+  "graphite",
+  "midnight",
+]) {
+  test(`${theme} theme has accessible contrast and a usable toolbar`, async ({
+    page,
+  }) => {
+    await page.goto(`/?preview=1&theme=${theme}`);
+    await page.getByRole("button", { name: "Open theme toolbar" }).click();
+    const result = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+      .analyze();
+    expect(
+      result.violations.map(({ id, nodes }) => ({
+        id,
+        nodes: nodes.map(({ target, failureSummary }) => ({
+          target,
+          failureSummary,
+        })),
+      })),
+    ).toEqual([]);
+    const bounds = await page
+      .getByRole("dialog", { name: "Collabute Studio" })
+      .boundingBox();
+    const viewport = page.viewportSize()!;
+    expect(bounds!.x).toBeGreaterThanOrEqual(0);
+    expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(viewport.width);
+    expect(bounds!.y).toBeGreaterThanOrEqual(0);
+    expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(viewport.height);
+    await page.keyboard.press("Escape");
+    const site = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+      .analyze();
+    expect(
+      site.violations.map(({ id, nodes }) => ({
+        id,
+        nodes: nodes.map(({ target, failureSummary }) => ({
+          target,
+          failureSummary,
+        })),
+      })),
+    ).toEqual([]);
+  });
+}
+
+test("decorative loops run in view and respect the motion override", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/?preview=1");
+  await page.locator(".workflow-visual").first().scrollIntoViewIfNeeded();
+  await expect(page.locator(".workflow-section")).toHaveClass(/is-in-view/);
+  await expect(page.locator(".waveform > span").first()).toHaveCSS(
+    "animation-play-state",
+    "running",
+  );
+  await expect(page.locator(".waveform > span").first()).toHaveCSS(
+    "animation-name",
+    "waveform-breathe",
+  );
+  await page.locator(".footer-wordmark").scrollIntoViewIfNeeded();
+  await expect(page.locator(".footer-wordmark > span").first()).toHaveCSS(
+    "animation-play-state",
+    "running",
+  );
+  await expect(page.locator(".waveform > span").first()).toHaveCSS(
+    "animation-play-state",
+    "paused",
+  );
+  await page.getByRole("button", { name: "Pause site animations" }).click();
+  await expect(page.locator(".footer-wordmark > span").first()).toHaveCSS(
+    "animation-name",
+    "none",
+  );
+  await page.getByRole("button", { name: "Resume site animations" }).click();
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(page.locator(".footer-wordmark > span").first()).toHaveCSS(
+    "animation-name",
+    "none",
+  );
+});
+
+test("preview links copy the current theme and keyboard shortcut opens studio", async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/?preview=1&theme=cobalt");
+  await page.keyboard.press("Control+.");
+  await expect(
+    page.getByRole("dialog", { name: "Collabute Studio" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Copy theme preview link" }).click();
+  await expect(page.getByRole("status")).toHaveText("Preview link copied");
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  expect(new URL(copied).searchParams.get("theme")).toBe("cobalt");
+  expect(new URL(copied).searchParams.get("preview")).toBe("1");
+  await page.keyboard.press("Control+.");
+  await expect(
+    page.getByRole("dialog", { name: "Collabute Studio" }),
+  ).toHaveCount(0);
+});

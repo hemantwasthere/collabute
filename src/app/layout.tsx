@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { DM_Sans, IBM_Plex_Mono, Instrument_Serif } from "next/font/google";
 import { site } from "@/lib/site";
+import { ThemeToolbar } from "@/components/dev/theme-toolbar";
+import { SiteMotion } from "@/components/motion/site-motion";
+import { themeBootstrap } from "@/lib/themes";
 import "./globals.css";
 
 const sans = DM_Sans({
@@ -50,9 +53,25 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${sans.variable} ${mono.variable} ${serif.variable}`}
     >
-      <body>{children}</body>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: themeBootstrap(
+              process.env.NODE_ENV === "development" ||
+                process.env.VERCEL_ENV === "preview" ||
+                process.env.NEXT_PUBLIC_THEME_PREVIEW === "true",
+            ),
+          }}
+        />
+      </head>
+      <body>
+        {children}
+        <SiteMotion />
+        <ThemeToolbar />
+      </body>
     </html>
   );
 }

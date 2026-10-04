@@ -113,8 +113,8 @@ export function ProductPreview() {
               )}
             >
               <div className="source-title">
-                <span className="source-icon bg-[#eff5eb]">
-                  <Video className="size-4 text-[#4c714d]" />
+                <span className="source-icon bg-[var(--secondary)]">
+                  <Video className="size-4 text-[var(--accent-ink)]" />
                 </span>
                 <strong>Product sync</strong>
                 <span className="source-time">9:30 AM</span>
@@ -162,12 +162,15 @@ export function ProductPreview() {
               )}
             >
               <div className="source-title">
-                <ToolIcon name="linear" className="size-4 text-[#6d6ab0]" />
+                <ToolIcon
+                  name="linear"
+                  className="size-4 text-[var(--accent-ink)]"
+                />
                 <strong>Onboarding v2</strong>
                 <span className="source-time">LIN-128</span>
               </div>
               <div className="mt-3 flex items-center gap-2 text-[11px] text-muted-foreground">
-                <Circle className="size-3 text-[#c0a26c]" />
+                <Circle className="size-3 text-[var(--accent-ink)]" />
                 <span>In progress</span>
                 <span className="ml-auto">Due Friday</span>
               </div>
@@ -176,21 +179,8 @@ export function ProductPreview() {
           <div className="context-bridge" aria-hidden="true">
             <svg viewBox="0 0 170 350" preserveAspectRatio="none">
               <path d="M0 82H25Q50 82 50 108V149Q50 175 75 175H170M0 207H28Q50 207 50 190V184Q50 175 75 175M0 306H25Q50 306 50 280V201Q50 175 75 175" />
-              <circle className="flow-dot" r="3">
-                <animateMotion
-                  dur="5s"
-                  repeatCount="indefinite"
-                  path="M0 82H25Q50 82 50 108V149Q50 175 75 175H170"
-                />
-              </circle>
-              <circle className="flow-dot" r="3">
-                <animateMotion
-                  dur="5s"
-                  begin="2s"
-                  repeatCount="indefinite"
-                  path="M0 306H25Q50 306 50 280V201Q50 175 75 175H170"
-                />
-              </circle>
+              <circle className="flow-dot flow-dot-first" r="3" />
+              <circle className="flow-dot flow-dot-second" r="3" />
             </svg>
             <div className="bridge-mark">
               <BrandMark className="size-7" />
@@ -207,7 +197,7 @@ export function ProductPreview() {
               <Sparkles className="size-3.5 text-primary" />
             </div>
             <div className="output-greeting">
-              <span className="flex size-7 items-center justify-center rounded-full bg-[#e7efdf]">
+              <span className="flex size-7 items-center justify-center rounded-full bg-[var(--secondary)]">
                 <BrandMark className="size-4 text-primary" />
               </span>
               <div>

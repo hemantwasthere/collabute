@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { Wordmark } from "@/components/brand-mark";
+import { BrandLink } from "@/components/brand-link";
 import { site } from "@/lib/site";
 
 const groups = [
@@ -36,9 +35,7 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="footer-top">
         <div className="footer-brand">
-          <Link href="/" aria-label="Collabute home">
-            <Wordmark className="text-primary" />
-          </Link>
+          <BrandLink />
           <p>
             A little more connected.
             <br />A lot more possible.
@@ -73,7 +70,14 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="footer-wordmark" aria-hidden="true">
-        collabute<span>↗</span>
+        {"collabute".split("").map((letter, index) => (
+          <span
+            key={index}
+            style={{ "--letter-index": index } as React.CSSProperties}
+          >
+            {letter}
+          </span>
+        ))}
       </div>
     </footer>
   );

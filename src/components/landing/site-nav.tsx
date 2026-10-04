@@ -1,9 +1,8 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { ArrowUpRight, Menu, X } from "lucide-react";
-import { Wordmark } from "@/components/brand-mark";
+import { BrandLink } from "@/components/brand-link";
 import { Button } from "@/components/ui/button";
 import { site } from "@/lib/site";
 
@@ -29,9 +28,7 @@ export function SiteNav() {
   return (
     <header className="site-header">
       <div className="nav-inner">
-        <Link href="/" aria-label="Collabute home" className="text-primary">
-          <Wordmark />
-        </Link>
+        <BrandLink home onNavigate={() => setOpen(false)} />
         <nav
           aria-label="Main navigation"
           className="hidden items-center gap-7 lg:flex"
