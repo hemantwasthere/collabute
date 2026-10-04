@@ -417,7 +417,7 @@ test("footer reacts to the pointer and link arrows lift without moving button ar
   const bounds = await word.boundingBox();
   const letter = word.locator("span").first();
   expect((await letter.boundingBox())!.height).toBeGreaterThan(
-    bounds!.height * 1.5,
+    bounds!.height * 1.4,
   );
   await word.hover();
   await expect(letter).not.toHaveCSS("transform", "none");

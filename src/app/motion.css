@@ -148,7 +148,7 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  height: clamp(48px, 8.2vw, 110px);
+  height: 0.55em;
   margin-top: clamp(38px, 5vw, 64px);
   overflow: hidden;
   font-size: clamp(74px, 19vw, 244px);
@@ -158,7 +158,7 @@
   color: var(--wordmark);
   user-select: none;
   cursor: default;
-  mask-image: linear-gradient(black 35%, transparent 100%);
+  mask-image: linear-gradient(black 40%, transparent 100%);
 }
 .footer-wordmark > span {
   display: inline-block;
