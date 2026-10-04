@@ -252,10 +252,12 @@ test("preview preferences pause motion, toggle grids, and reset", async ({
   await expect(page.locator("html")).toHaveAttribute("data-motion", "on");
   await expect(page.locator("html")).toHaveAttribute("data-grid", "on");
   await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: "Minimize toolbar" }).click();
-  await expect(
-    page.getByRole("button", { name: "Theme preferences", exact: true }),
-  ).toHaveCount(0);
+  await expect(page.locator(".dev-dock button")).toHaveCount(2);
+  const dock = await page.locator(".dev-dock").boundingBox();
+  expect(dock!.height).toBeGreaterThan(dock!.width);
+  expect(
+    Math.abs(dock!.y + dock!.height / 2 - page.viewportSize()!.height / 2),
+  ).toBeLessThan(2);
   await page.getByRole("button", { name: "Open theme toolbar" }).click();
   await expect(
     page.getByRole("dialog", { name: "Collabute Studio" }),
@@ -328,19 +330,22 @@ test("decorative loops run in view and respect the motion override", async ({
   );
   await page.locator(".footer-wordmark").scrollIntoViewIfNeeded();
   await expect(page.locator(".footer-wordmark > span").first()).toHaveCSS(
-    "animation-play-state",
-    "running",
+    "animation-name",
+    "none",
   );
   await expect(page.locator(".waveform > span").first()).toHaveCSS(
     "animation-play-state",
     "paused",
   );
-  await page.getByRole("button", { name: "Pause site animations" }).click();
+  await page
+    .getByRole("button", { name: "Theme preferences", exact: true })
+    .click();
+  await page.getByRole("switch", { name: /Subtle motion/ }).click();
   await expect(page.locator(".footer-wordmark > span").first()).toHaveCSS(
     "animation-name",
     "none",
   );
-  await page.getByRole("button", { name: "Resume site animations" }).click();
+  await page.getByRole("switch", { name: /Subtle motion/ }).click();
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(page.locator(".footer-wordmark > span").first()).toHaveCSS(
     "animation-name",
@@ -367,4 +372,113 @@ test("preview links copy the current theme and keyboard shortcut opens studio", 
   await expect(
     page.getByRole("dialog", { name: "Collabute Studio" }),
   ).toHaveCount(0);
+});
+
+test("logo variants persist, share, and reset", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/?preview=1");
+  await page
+    .getByRole("button", { name: "Theme preferences", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Original logo", exact: true })
+    .click();
+  await expect(page.locator("html")).toHaveAttribute("data-logo", "original");
+  const original = page.locator(".site-header .brand-mark-original");
+  await expect(original).toBeVisible();
+  await expect(page.locator(".site-header .brand-mark-current")).toBeHidden();
+  await expect
+    .poll(() =>
+      original.evaluate((image) => (image as HTMLImageElement).naturalWidth),
+    )
+    .toBeGreaterThan(0);
+  await page.getByRole("button", { name: "Copy theme preview link" }).click();
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  expect(new URL(copied).searchParams.get("logo")).toBe("original");
+  await page.reload();
+  await expect(original).toBeVisible();
+  await page
+    .getByRole("button", { name: "Theme preferences", exact: true })
+    .click();
+  await page.getByRole("button", { name: /Back to the original/ }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-logo", "current");
+  await page.goto(copied);
+  await expect(original).toBeVisible();
+});
+
+test("footer reacts to the pointer and link arrows lift without moving button arrows", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, "Pointer hover is desktop only");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  const word = page.locator(".footer-wordmark");
+  await word.scrollIntoViewIfNeeded();
+  const bounds = await word.boundingBox();
+  const letter = word.locator("span").first();
+  expect((await letter.boundingBox())!.height).toBeGreaterThan(
+    bounds!.height * 1.5,
+  );
+  await word.hover();
+  await expect(letter).not.toHaveCSS("transform", "none");
+  await expect(word).toHaveAttribute("style", /--pointer-x/);
+  const link = page.getByRole("link", { name: "About us" });
+  await link.hover();
+  await expect(link.locator("svg")).toHaveCSS(
+    "transform",
+    "matrix(1, 0, 0, 1, 2, -2)",
+  );
+  const button = page.locator('.closing-cta a[data-slot="button"]').first();
+  await button.hover();
+  await expect(button.locator("svg")).toHaveCSS("transform", "none");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await word.hover();
+  await expect(letter).toHaveCSS("transform", "none");
+});
+
+test("feature illustrations animate in view and stop for reduced motion", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  const ticket = page.locator(".feature-ticket");
+  await ticket.scrollIntoViewIfNeeded();
+  await expect(ticket).toHaveCSS("animation-name", "ticket-float");
+  await expect(ticket).toHaveCSS("animation-play-state", "running");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(ticket).toHaveCSS("animation-name", "none");
+});
+
+test("mobile menu morphs, closes accessibly, and fits small screens", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, "Mobile navigation only");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.getByRole("button", { name: "Open menu", exact: true }).click();
+  const nav = page.getByRole("navigation", { name: "Mobile navigation" });
+  await expect(nav).toBeVisible();
+  await expect(page.locator(".menu-glyph > span").nth(1)).toHaveCSS(
+    "opacity",
+    "0",
+  );
+  await expect(page.locator(".menu-glyph > span").first()).not.toHaveCSS(
+    "transform",
+    "none",
+  );
+  const audit = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+    .analyze();
+  expect(audit.violations).toEqual([]);
+  await page.keyboard.press("Escape");
+  await expect(nav).toBeHidden();
+  await expect(
+    page.getByRole("button", { name: "Open menu", exact: true }),
+  ).toBeFocused();
+  await expect(page.locator(".menu-glyph > span").first()).toHaveCSS(
+    "transform",
+    "none",
+  );
+  await page.setViewportSize({ width: 320, height: 568 });
+  await page.getByRole("button", { name: "Open menu", exact: true }).click();
+  await expect(nav.getByRole("link", { name: "Get started" })).toBeInViewport();
 });

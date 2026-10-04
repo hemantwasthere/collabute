@@ -1,5 +1,6 @@
 import { ArrowUpRight } from "lucide-react";
 import { BrandLink } from "@/components/brand-link";
+import { FooterWordmark } from "@/components/landing/footer-wordmark";
 import { site } from "@/lib/site";
 
 const groups = [
@@ -69,16 +70,7 @@ export function SiteFooter() {
           <a href="#top">Back to top ↑</a>
         </div>
       </div>
-      <div className="footer-wordmark" aria-hidden="true">
-        {"collabute".split("").map((letter, index) => (
-          <span
-            key={index}
-            style={{ "--letter-index": index } as React.CSSProperties}
-          >
-            {letter}
-          </span>
-        ))}
-      </div>
+      <FooterWordmark />
     </footer>
   );
 }

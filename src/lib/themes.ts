@@ -56,13 +56,15 @@ export const themes = [
 ] as const;
 
 export type ThemeId = (typeof themes)[number]["id"];
+export type LogoVariant = "current" | "original";
 export const themeStorageKey = "collabute-preview";
 export const previewDefaults = {
   theme: "forest" as ThemeId,
+  logo: "current" as LogoVariant,
   motion: true,
   grid: true,
 };
 
 export function themeBootstrap(enabled: boolean) {
-  return `(()=>{try{const r=document.documentElement,q=new URLSearchParams(location.search),enabled=${JSON.stringify(enabled)}||q.get('preview')==='1';if(!enabled)return;r.dataset.preview='true';let p={};try{p=JSON.parse(localStorage.getItem('${themeStorageKey}')||'{}')||{}}catch{}const t=q.get('theme')||p.theme;const themes=${JSON.stringify(themes.map(({ id }) => id))};r.dataset.theme=themes.includes(t)?t:'forest';r.dataset.motion=p.motion===false?'off':'on';r.dataset.grid=p.grid===false?'off':'on';document.querySelector('meta[name="theme-color"]')?.setAttribute('content',${JSON.stringify(Object.fromEntries(themes.map(({ id, background }) => [id, background])))}[r.dataset.theme])}catch{}})();`;
+  return `(()=>{try{const r=document.documentElement,q=new URLSearchParams(location.search),enabled=${JSON.stringify(enabled)}||q.get('preview')==='1';if(!enabled)return;r.dataset.preview='true';let p={};try{p=JSON.parse(localStorage.getItem('${themeStorageKey}')||'{}')||{}}catch{}const t=q.get('theme')||p.theme;const themes=${JSON.stringify(themes.map(({ id }) => id))};r.dataset.theme=themes.includes(t)?t:'forest';r.dataset.logo=(q.get('logo')||p.logo)==='original'?'original':'current';r.dataset.motion=p.motion===false?'off':'on';r.dataset.grid=p.grid===false?'off':'on';document.querySelector('meta[name="theme-color"]')?.setAttribute('content',${JSON.stringify(Object.fromEntries(themes.map(({ id, background }) => [id, background])))}[r.dataset.theme])}catch{}})();`;
 }

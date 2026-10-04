@@ -9,3 +9,4 @@ out/
 .gstack/
 playwright-report/
 test-results/
+.vercel

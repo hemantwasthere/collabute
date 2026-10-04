@@ -7,9 +7,7 @@ import {
   ChevronRight,
   Copy,
   Grid2X2,
-  Minus,
   Palette,
-  Pause,
   Play,
   RotateCcw,
   Search,
@@ -24,7 +22,6 @@ import { updatePreview, usePreviewSettings } from "@/lib/preview-store";
 export function ThemeToolbar() {
   const settings = usePreviewSettings();
   const [open, setOpen] = React.useState(false);
-  const [minimized, setMinimized] = React.useState(false);
   const [panel, setPanel] = React.useState<"themes" | "preferences">("themes");
   const [query, setQuery] = React.useState("");
   const [copyStatus, setCopyStatus] = React.useState("");
@@ -41,7 +38,6 @@ export function ThemeToolbar() {
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key === ".") {
         event.preventDefault();
-        setMinimized(false);
         setOpen((value) => !value);
       }
     };
@@ -59,6 +55,7 @@ export function ThemeToolbar() {
     const url = new URL(window.location.href);
     url.searchParams.set("preview", "1");
     url.searchParams.set("theme", settings.theme);
+    url.searchParams.set("logo", settings.logo);
     try {
       await navigator.clipboard.writeText(url.toString());
       setCopyStatus("Preview link copied");
@@ -71,16 +68,13 @@ export function ThemeToolbar() {
 
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
-      <div
-        className={`dev-dock ${minimized ? "dev-dock-minimized" : ""}`}
-        aria-label="Design preview tools"
-      >
+      <div className="dev-dock" aria-label="Design preview tools">
         <Popover.Trigger asChild>
           <button
             className="dev-dock-brand"
             aria-label="Open theme toolbar"
             title="Theme studio · ⌘ / Ctrl + ."
-            onClick={() => setMinimized(false)}
+            onClick={() => setPanel("themes")}
           >
             <BrandMark className="size-4" />
             <span
@@ -89,47 +83,22 @@ export function ThemeToolbar() {
             />
           </button>
         </Popover.Trigger>
-        {!minimized && (
-          <>
-            <span className="dev-dock-divider" />
-            <button
-              aria-label="Theme preferences"
-              title="Preferences"
-              onClick={() => {
-                setPanel("preferences");
-                setOpen(true);
-              }}
-            >
-              <SlidersHorizontal />
-            </button>
-            <button
-              aria-label={
-                settings.motion
-                  ? "Pause site animations"
-                  : "Resume site animations"
-              }
-              title={settings.motion ? "Pause motion" : "Resume motion"}
-              onClick={() => updatePreview({ motion: !settings.motion })}
-            >
-              {settings.motion ? <Pause /> : <Play />}
-            </button>
-            <button
-              aria-label="Minimize toolbar"
-              title="Minimize toolbar"
-              onClick={() => {
-                setOpen(false);
-                setMinimized(true);
-              }}
-            >
-              <Minus />
-            </button>
-          </>
-        )}
+        <span className="dev-dock-divider" />
+        <button
+          aria-label="Theme preferences"
+          title="Preferences"
+          onClick={() => {
+            setPanel("preferences");
+            setOpen(true);
+          }}
+        >
+          <SlidersHorizontal />
+        </button>
       </div>
       <Popover.Portal>
         <Popover.Content
-          side="top"
-          align="end"
+          side="left"
+          align="center"
           sideOffset={14}
           collisionPadding={12}
           className="dev-panel"
@@ -145,7 +114,7 @@ export function ThemeToolbar() {
             <div>
               <span className="dev-kicker">
                 <span />
-                LOCAL PREVIEW
+                DESIGN PREVIEW
               </span>
               <h2 id="theme-studio-title">Collabute Studio</h2>
             </div>
@@ -251,6 +220,24 @@ export function ThemeToolbar() {
               <p className="dev-intro">
                 A little more control over the details.
               </p>
+              <fieldset className="dev-logo-picker">
+                <legend>Collabute logo</legend>
+                <p>A familiar face or a fresh start.</p>
+                <div>
+                  {(["current", "original"] as const).map((logo) => (
+                    <button
+                      key={logo}
+                      aria-label={`${logo === "current" ? "Current" : "Original"} logo`}
+                      aria-pressed={settings.logo === logo}
+                      onClick={() => updatePreview({ logo })}
+                    >
+                      <BrandMark variant={logo} className="size-7" />
+                      <span>{logo === "current" ? "Current" : "Original"}</span>
+                      {settings.logo === logo && <Check className="size-3" />}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
               <PreferenceToggle
                 id="motion-preference"
                 icon={<Play />}
@@ -277,7 +264,7 @@ export function ThemeToolbar() {
                 <RotateCcw />
                 <span>
                   Back to the original
-                  <small>Forest · motion on · grid on</small>
+                  <small>Forest · current logo · motion & grid on</small>
                 </span>
                 <ChevronRight />
               </button>

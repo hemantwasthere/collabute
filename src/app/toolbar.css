@@ -11,8 +11,10 @@
 }
 .dev-dock {
   position: fixed;
-  right: 24px;
-  bottom: 24px;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: column;
   z-index: 45;
   display: flex;
   align-items: center;
@@ -54,13 +56,10 @@
   border: 1px solid #111;
 }
 .dev-dock-divider {
-  width: 1px;
-  height: 18px;
+  width: 18px;
+  height: 1px;
   background: #343438;
-  margin-inline: 3px;
-}
-.dev-dock-minimized {
-  padding: 4px;
+  margin-block: 3px;
 }
 .dev-dock button:focus-visible,
 .dev-panel button:focus-visible,
@@ -71,7 +70,7 @@
 .dev-panel {
   display: flex;
   flex-direction: column;
-  width: min(388px, calc(100vw - 24px));
+  width: min(388px, calc(100vw - 86px));
   max-height: min(760px, var(--radix-popover-content-available-height));
   overflow: hidden;
   overscroll-behavior: contain;
@@ -244,7 +243,7 @@
   width: 100%;
   gap: 5px;
 }
-.dev-mini-nav svg {
+.dev-mini-nav > .brand-mark {
   width: 7px;
   height: 7px;
   color: var(--swatch-accent);
@@ -495,8 +494,7 @@
 }
 @media (max-width: 767px) {
   .dev-dock {
-    bottom: max(16px, env(safe-area-inset-bottom));
-    right: 16px;
+    right: 10px;
   }
 }
 
@@ -505,4 +503,56 @@
 .dev-panel-footer,
 .dev-copy-status {
   flex-shrink: 0;
+}
+
+.dev-logo-picker {
+  padding-bottom: 20px;
+}
+.dev-logo-picker legend {
+  font-size: 12px;
+  color: #e6e6ea;
+}
+.dev-logo-picker p {
+  font-size: 10px;
+  color: #a2a2ad;
+  margin: 5px 0 14px;
+}
+.dev-logo-picker > div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.dev-logo-picker button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #36363c;
+  border-radius: 9px;
+  padding: 13px 10px;
+  font-size: 11px;
+  color: #b9b9c1;
+}
+.dev-logo-picker button[aria-pressed="true"] {
+  background: #242429;
+  border-color: #b8b8c3;
+  color: #fff;
+}
+.dev-logo-picker button > svg {
+  margin-left: auto;
+}
+@media (max-width: 420px) {
+  .dev-saved {
+    display: none;
+  }
+  .dev-panel-heading,
+  .dev-panel-body {
+    padding: 16px;
+  }
+  .dev-panel-tabs {
+    padding-inline: 9px;
+  }
+  .dev-logo-picker button {
+    gap: 6px;
+    padding: 12px 8px;
+  }
 }
